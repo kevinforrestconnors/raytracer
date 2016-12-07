@@ -1,0 +1,155 @@
+shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
+
+	precision highp float;
+
+	varying vec3 viewDir;
+	varying vec3 worldNormal;
+	varying vec2 texCoord;
+
+	uniform sampler2D colorTexture; 
+	uniform samplerCube envMapTexture;
+	uniform vec3 eyePos;
+	uniform mat4 quadrics[20];
+
+	float intersectQuadric(mat4 A, mat4 B, vec4 e, vec4 d) {
+		float a = dot(d, A * d);
+		float b = dot(d, A * e) + dot(e, A * d);
+		float c = dot(e, A * e);
+		float t1;
+		float t2;
+
+		float discriminant = (b * b) - (4.0 * a * c);
+
+		if (discriminant < 0.0) {
+			return -1.0;
+		} else {
+			t1 = ((-1.0 * b) + sqrt(discriminant)) / (2.0 * a);
+			t2 = ((-1.0 * b) - sqrt(discriminant)) / (2.0 * a);
+
+			vec4 ray1 = e + d * t1;
+			vec4 ray2 = e + d * t2;
+
+			if (dot(ray1 * B, ray1) > 0.0) {
+				t1 = -1.0;
+			}
+
+			if (dot(ray2 * B, ray2) > 0.0) {
+				t2 = -1.0;
+			}
+
+			if (t1 < 0.0 && t2 < 0.0) {
+				return -1.0;
+			} else if (t1 < 0.0) {
+				return t2;
+			} else if (t2 < 0.0) {
+				return t1;
+			} else if (t1 < t2) {
+				return t1;
+			} else {
+				return t2;
+			}
+		}
+
+
+	}
+
+	bool findBestHit(vec4 eR, vec4 dR, out float bestT, out mat4 coeffMatrix) {
+
+		bestT = 9999.0;
+
+		mat4 A;
+		mat4 B;
+
+		for (int i = 0; i < 10; i++) {
+			A = quadrics[2 * i];
+			B = quadrics[2 * i + 1];
+
+			float tempT = intersectQuadric(A, B, eR, dR);
+
+			if (tempT > 0.0 && tempT < bestT) {
+				bestT = tempT;
+				coeffMatrix = A;
+			}
+			
+		}
+
+		return bestT > 0.0 && bestT < 9999.0;
+
+	}
+
+	vec3 shade(vec3 normal, vec3 viewDir, vec3 lightDir, vec3 lightPowerDensity, vec3 ks, float shininess, vec3 kd)  {
+    	float cosTheta = dot(normal, normalize(lightDir));
+
+    	if(cosTheta < 0.0) {
+        	return vec3(0,0,0);
+      	}
+
+      	vec3 diffuse = kd * cosTheta * lightPowerDensity;
+
+    	vec3 halfway = normalize(viewDir + lightDir);
+    	float cosDelta = dot(normal, halfway);
+
+    	if(cosDelta < 0.0) {
+      		return diffuse;
+    	} else {
+
+    		return diffuse + (lightPowerDensity * ks * pow(cosDelta, shininess));
+    	}
+  	}
+
+	void main(void) {
+
+		vec4 e = vec4(eyePos, 1);
+		vec4 d = vec4(viewDir, 0);
+
+		mat4 coeffMatrix;
+
+		float bestHit;
+		vec3 normal;
+
+		if (findBestHit(e, d, bestHit, coeffMatrix)) {
+
+			vec4 worldPosition = e + d * bestHit;
+			normal = normalize((worldPosition * coeffMatrix).xyz);
+
+			vec4 directionalArray[2];
+
+			vec4 directional0 = vec4(normalize(vec3(-10,4,-1)),0);
+			vec4 directional1 = vec4(normalize(vec3(5,8,5)),0);
+
+			directionalArray[0] = directional0;
+			directionalArray[1] = directional1;
+
+			vec3 powerDensityArray[2];
+			vec3 powerDensity0 = vec3(1,1,1);
+			vec3 powerDensity1 = vec3(0.2,0.2,0.4);
+
+			powerDensityArray[0] = powerDensity0;
+			powerDensityArray[1] = powerDensity1;
+
+			vec3 thisKS = vec3(0,0,0);
+			vec3 shading;
+			vec3 shadingResult = vec3(0,0,0);
+			vec3 color = vec3(1,1,1);
+			float thisShininess = 100000.0;
+
+			for(int i = 0; i < 2; i++) {
+
+				if(findBestHit(worldPosition + vec4(normal * 0.001, 0), directionalArray[i], bestHit, coeffMatrix)) {
+					//shadows
+	 				shading = vec3(0,0,0);
+				} else {
+					//not shadows
+					shading = shade(normal.xyz, -viewDir, directionalArray[i].xyz, powerDensityArray[i], thisKS, thisShininess, color);
+    			}
+    			shadingResult += shading;
+    		}
+
+			gl_FragColor = vec4(shadingResult, 1);
+		} else {
+			gl_FragColor = textureCube(envMapTexture, viewDir);
+		}
+
+	}
+  
+`;

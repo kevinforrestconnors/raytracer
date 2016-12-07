@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>	
+<head>
+	<title>AIT Computer Graphics: Initial Framework</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="css/style.css" />
+</head>
+<body>
+
+	<div class="container">
+	  <canvas id="canvas"></canvas>
+	  <div id="overlay">
+	    <div>Time: <span id="time"></span></div>
+	    <div>Angle: <span id="angle"></span></div>
+	  </div>
+	</div>
+
+	<script src="js/vectormath.min.js"></script>
+	<script>
+	  Vector2 = vectormath.Vector2;
+	  Vector3 = vectormath.Vector3;
+	  Vector4 = vectormath.Vector4;
+	  Matrix4 = vectormath.Matrix4;
+	</script>
+	<script src="js/keycodes.js"></script>
+	<script src="js/shaders/shaderSource.js"></script>
+	<script src="js/shaders/raytracer_fs.essl"></script>
+	<script src="js/shaders/raytracer_vs.essl"></script>
+	<script src="js/Shader.js"></script>
+	<script src="js/Texture.js"></script>
+	<script src="js/Program.js"></script>
+	<script src="js/Material.js"></script>
+	<script src="js/Quad.js"></script>
+	<!-- <script src="js/FanGeometry.js"></script> -->
+	<script src="js/MeshGeometry.js"></script>
+	<script src="js/TextureCube.js"></script>
+	<script src="js/ClippedQuadric.js"></script>
+	<script src="js/GameObject.js"></script>
+	<script src="js/PerspectiveCamera.js"></script>
+	<script src="js/Scene.js"></script>
+	<script src="js/App.js"></script>
+	
+</body>
+</html>
