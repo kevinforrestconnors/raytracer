@@ -9,9 +9,57 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 	uniform sampler2D colorTexture; 
 	uniform samplerCube envMapTexture;
 	uniform vec3 eyePos;
-	uniform mat4 quadrics[20];
+	uniform mat4 quadrics[80];
 
-	float intersectQuadric(mat4 A, mat4 B, vec4 e, vec4 d) {
+	float snoise(vec3 r) {
+
+	  vec3 s = vec3(7502, 22777, 4767); // quasi-random seed
+
+	  float f = 0.0;
+
+	  for(int i=0; i<16; i++) {
+
+		    // add a bunch of quasi-random sines
+
+		    f += sin( dot(s, r) / 65536.0);
+
+		    // generate next quasi-random
+
+		    s = mod(s, 32768.0) * 2.0 + floor(s / 32768.0);
+
+		}
+
+  		return f / 32.0 + 0.5; // result between 0 and 1
+
+	}
+
+	vec3 snoiseGrad(vec3 r) {
+
+	  	vec3 s = vec3(7502, 22777, 4767); // quasi-random seed
+
+	  	vec3 f = vec3(0.0, 0.0, 0.0);
+
+	  	for(int i=0; i<16; i++) {
+
+	    // add derivatives of quasi-random sines
+
+	    f += cos( dot(s, r) / 65536.0) * s;
+
+	    // generate next quasi-random
+
+	    s = mod(s, 32768.0) * 2.0 + floor(s / 32768.0);
+
+		}
+
+	  return f / 65536.0;
+
+	}
+
+	float rand(vec2 co){
+    	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+	}	
+
+	float intersectQuadric(mat4 A, mat4 B, vec4 e, vec4 d, int index) {
 		float a = dot(d, A * d);
 		float b = dot(d, A * e) + dot(e, A * d);
 		float c = dot(e, A * e);
@@ -29,13 +77,25 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 			vec4 ray1 = e + d * t1;
 			vec4 ray2 = e + d * t2;
 
-			if (dot(ray1 * B, ray1) > 0.0) {
-				t1 = -1.0;
-			}
+			if (index == 14 || index == 15 || index == 16 || index == 18 || index == 19 || index == 20) {
+				if (dot(ray1 * B, ray1) > 0.0 || rand(vec2(ray1.x, ray1.z)) > 0.95) {
+					t1 = -1.0;
+				}
 
-			if (dot(ray2 * B, ray2) > 0.0) {
-				t2 = -1.0;
-			}
+				if (dot(ray2 * B, ray2) > 0.0 || rand(vec2(ray2.x, ray2.z)) > 0.95) {
+					t2 = -1.0;
+				}
+			} else {
+				if (dot(ray1 * B, ray1) > 0.0) {
+					t1 = -1.0;
+				}
+
+				if (dot(ray2 * B, ray2) > 0.0) {
+					t2 = -1.0;
+				}
+			}	
+
+
 
 			if (t1 < 0.0 && t2 < 0.0) {
 				return -1.0;
@@ -53,22 +113,71 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 
 	}
 
-	bool findBestHit(vec4 eR, vec4 dR, out float bestT, out mat4 coeffMatrix) {
+	bool findBestHit(vec4 eR, vec4 dR, out float bestT, out mat4 coeffMatrix, out vec3 bestColor, out vec3 bestKS, out int index) {
 
 		bestT = 9999.0;
 
 		mat4 A;
 		mat4 B;
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 40; i++) {
 			A = quadrics[2 * i];
 			B = quadrics[2 * i + 1];
 
-			float tempT = intersectQuadric(A, B, eR, dR);
+			float tempT = intersectQuadric(A, B, eR, dR, i);
 
 			if (tempT > 0.0 && tempT < bestT) {
 				bestT = tempT;
 				coeffMatrix = A;
+				bestColor = vec3(1, 1, 1);
+				bestKS = vec3(0.1, 0.1, 0.1);
+				index = i;
+
+				if (i == 1) {
+					bestColor = vec3(1, 1, 1);
+				} else if (i == 2) {
+					bestColor = vec3(1, 1, 1);
+				} else if (i == 3) {
+					bestColor = vec3(0.1, 0.1, 0.1);
+				} else if (i == 4) {
+					bestColor = vec3(0.1, 0.1, 0.1);
+				} else if (i == 5) {
+					bestColor = vec3(.93, .57, .13);
+				} else if (i == 8) {
+					bestColor = vec3(.61, .16, 0);
+				} else if (i == 9) {
+					bestColor = vec3(1, .63, 0);
+					bestKS = vec3(1.5, 1.5, 1.5);
+				} else if (i == 10) {
+					bestColor = vec3(1, .63, 0);
+					bestKS = vec3(1.5, 1.5, 1.5);
+				} else if (i == 11) {
+					bestColor = vec3(1, .63, 0);
+					bestKS = vec3(1.5, 1.5, 1.5);
+				} else if (i == 12) {
+					bestColor = vec3(1, .63, 0);
+					bestKS = vec3(1.5, 1.5, 1.5);
+				} else if (i == 13) {
+					bestColor = vec3(1, .63, 0);
+					bestKS = vec3(1.5, 1.5, 1.5);
+				} else if (i == 14) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 15) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 16) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 17) {
+					bestColor = vec3(.51, .32, 0);
+				} else if (i == 18) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 19) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 20) {
+					bestColor = vec3(0, .8, 0);
+				} else if (i == 21) {
+					bestColor = vec3(.51, .32, 0);
+				}
+				
 			}
 			
 		}
@@ -107,22 +216,29 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 		float bestHit;
 		vec3 normal;
 
-		if (findBestHit(e, d, bestHit, coeffMatrix)) {
+		vec3 bestColor;
+		vec3 bestColor1;
+		vec3 bestKS;
+
+		int index1;
+		int index2;
+
+		if (findBestHit(e, d, bestHit, coeffMatrix, bestColor, bestKS, index1)) {
 
 			vec4 worldPosition = e + d * bestHit;
 			normal = normalize((worldPosition * coeffMatrix).xyz);
 
 			vec4 directionalArray[2];
 
-			vec4 directional0 = vec4(normalize(vec3(-10,4,-1)),0);
-			vec4 directional1 = vec4(normalize(vec3(5,8,5)),0);
+			vec4 directional0 = vec4(normalize(vec3(-5,14,-5)),0);
+			vec4 directional1 = vec4(normalize(vec3(10,10,-5)),0);
 
 			directionalArray[0] = directional0;
 			directionalArray[1] = directional1;
 
 			vec3 powerDensityArray[2];
 			vec3 powerDensity0 = vec3(1,1,1);
-			vec3 powerDensity1 = vec3(0.2,0.2,0.4);
+			vec3 powerDensity1 = vec3(1,1,1);
 
 			powerDensityArray[0] = powerDensity0;
 			powerDensityArray[1] = powerDensity1;
@@ -130,17 +246,24 @@ shaderSource[document.currentScript.src.split('js/shaders/')[1]] = `
 			vec3 thisKS = vec3(0,0,0);
 			vec3 shading;
 			vec3 shadingResult = vec3(0,0,0);
-			vec3 color = vec3(1,1,1);
-			float thisShininess = 100000.0;
+			vec3 thisKD = vec3(1,1,1);
+
+			float shininess = 20.0;
 
 			for(int i = 0; i < 2; i++) {
 
-				if(findBestHit(worldPosition + vec4(normal * 0.001, 0), directionalArray[i], bestHit, coeffMatrix)) {
+				if(findBestHit(worldPosition + vec4(normal * 0.001, 0), directionalArray[i], bestHit, coeffMatrix, bestColor1, bestKS, index2)) {
 					//shadows
 	 				shading = vec3(0,0,0);
 				} else {
-					//not shadows
-					shading = shade(normal.xyz, -viewDir, directionalArray[i].xyz, powerDensityArray[i], thisKS, thisShininess, color);
+					// not shadows
+					//oranges
+					if (index1 >= 9 && index1 <= 13) {
+						shading = shade(normalize(normal.xyz) + snoiseGrad(normal.xyz * 40.0) * 0.01, -viewDir, directionalArray[i].xyz, powerDensityArray[i], bestKS, shininess, bestColor);
+					} else {
+						shading = shade(normal.xyz, -viewDir, directionalArray[i].xyz, powerDensityArray[i], bestKS, shininess, bestColor);
+					}
+					
     			}
     			shadingResult += shading;
     		}

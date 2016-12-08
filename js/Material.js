@@ -73,6 +73,28 @@ Material.prototype.getVector3Uniform = function(uniformName) {
 // returns an object with a ‘set’ method that sets the uniform // directly, taking a Vec3 as parameter
 }
 
+Material.prototype.getVector4ArrayUniform = function(uniformName, elementCount){
+
+  var location = this.program.getUniformLocation(uniformName);
+  var floatArray = new Float32Array(elementCount * 4);
+  var gl = this.program.gl;
+
+  return { set: function(vectorArray){
+
+    for (var i = 0; i < elementCount; i++) {
+      floatArray[i*4+0] = vectorArray[i].x;
+      floatArray[i*4+1] = vectorArray[i].y;
+      floatArray[i*4+2] = vectorArray[i].z;
+      floatArray[i*4+3] = vectorArray[i].w;      
+
+    }
+
+    gl.uniform4fv(location, floatArray);
+
+   }};
+
+}
+
 Material.prototype.apply = function(gl) {
 
 	this.program.apply(gl);

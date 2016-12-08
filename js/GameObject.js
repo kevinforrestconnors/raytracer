@@ -29,6 +29,7 @@ var GameObject = function(geometry, material, opts) {
 	this.modelViewProjMatrix = opts.modelViewProjMatrix || new Matrix4();
 	this.quadrics = opts.quadrics || new Matrix4();
 
+	this.colors = opts.colors || [];
 }
 
 GameObject.prototype.draw = function(gl, dt, camera) {
@@ -62,6 +63,7 @@ GameObject.prototype.draw = function(gl, dt, camera) {
 	this.material.getVector3Uniform("shadow").set(new Vector3(1, 1, 1));
 	this.material.getVector3Uniform("eyePos").set(camera.position);
 	this.material.getMatrixUniform("quadrics").setDirect(this.quadrics);
+	this.material.getVector4ArrayUniform("colors").set(this.colors);
 
 	this.geometry.draw(gl);
 }
@@ -100,7 +102,7 @@ GameObject.prototype.drawShadow = function(gl, dt, camera) {
 	this.material.getMatrixUniform("viewDirMatrix").set(camera.viewDirMatrix);
 	this.material.getVector3Uniform("shadow").set(new Vector3(0, 0, 0));
 	this.material.getVector3Uniform("eyePos").set(camera.position);
-
+	this.material.getVector4ArrayUniform("colors").set(this.colors);
 
 	this.geometry.draw(gl);
 }

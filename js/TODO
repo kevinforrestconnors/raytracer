@@ -1,0 +1,62 @@
+[THIS DEADLINE IS ABSOLUTELY NON-NEGOTIABLE. You should upload incomplete versions ahead of time to make sure you do not lose all points on the technicality of missing the deadline.]
+
+Write a ray tracer program that renders a winter holiday scene.
+
+Each item is worth 5 points. Please submit an IMAGE, prominently displaying the implemented features, 
+
+and a LIST OF COMPLETED FEATURES, as well as the source code with all required media files. For WebGL, we should be able to test the project by just opening the index.html file in a browser.
+
+
+Progress: [25/50]
+
+DONE Shadows: at least two abstract light sources and properly cast (not plane-projected) shadows should be present.
+
+DONE Fir: a stylized evergreen made primarily out of clipped cones or paraboloids, with diffuse green color.
+
+DONE Snowman: a jolly chap made out of diffuse white spheres, an orange cone for a nose, and some black pieces of coal.
+
+DONE Candle: a large cylinder of white wax, with an emissive ellipsoid hovering over it. 
+TODO The flame should double as a point light source.
+
+DONE Scissored (requires Fir): procedural solid texturing is used to discard ray hits on the surfaces constituting the fir, punching holes in it.
+
+DONE A pile of oranges: spheres with the Phong-Blinn material model, and some procedural normal mapping.
+
+Animation: if your implementation is real-time, animate at least three different objects (a flickering flame, a tingling bell, a jumping snowman, etc...). If your implementation in not real-time, render a short sequence of images and compose them into a GIF file manually --- a single animated object is enough.
+
+
+TODO Box of presents: an axis-aligned diffuse cuboid. One way to implement this is to clip an infinite slab quadric with TWO orthogonal infinite slab quadrics. Add texturing (either procedural or image-based) on the box.
+
+TODO Wooden floor: a infinite plane (or slab) of polished wood, featuring both diffuse reflection with a procedural texturing pattern, and ideal reflection. [Also works as a handy shadow receiver.]
+
+Silver baubles and golden bells: baubles are ellipsoids, bells are a paraboloid and a hyperboloid artfully assembled. Both are made of ideally reflective (mirror-like) material.
+
+Lights: a few small point-like light sources coinciding with small spheres made out of emissive (bright without incoming illumination) material. (Lights should both illuminate diffuse/Phong-Blinn surfaces and be reflected in mirror baubles.)
+
+
+
+
+
+
+
+
+Point light extravaganza: one thousand abstract point lights, arranged so that exactly one falls in every cell of a 10x10x10 3D grid. Positions within cells may be random (procedurally computing it from the cell index is the most efficient). Power spectra should be random. Do not attempt to process them all, complete with shadow rays. Rather, find the cell that contains the shaded surface point, and process only light sources in neighboring cells. The lights themselves do not have to be visible, directly or in reflections.
+
+
+
+String lights: one thousand tiny spheres of emissive material, arranged so that exactly one falls in every cell of a 10x10x10 3D grid. Positions within cells may be random (procedurally computing it from the cell index is the most efficient). Emitted radiance spectra should be random. Do not attempt to intersect them all with all primary and secondary rays. Rather, find the cells that the ray goes through, and only intersect with lights that are in those. Shadow rays may skip intersecting them.
+
+
+
+
+30 points for D
+
+39 points for C
+
+48 points for B
+
+57 points for A
+
+66 points for A+
+
+75 points for A++
